@@ -1,24 +1,25 @@
-const { sign } = require("jsonwebtoken")
-const { addHours } = require("date-fns")
+const jwt = require("jsonwebtoken")
 
-const response = {
-  privateKey:
-  "-----BEGIN RSA PRIVATE KEY-----\n something here -----END RSA PRIVATE KEY-----\n",
-  kid: "<key_id>",
-  ownerId: "<app_id>",
+const KID = "<key_id>"
+const PRIVATE_KEY = "<private_key>"
+const APP_ID = "<app_id>"
+
+function main() {
+  const today = new Date()
+  const c = jwt.sign(
+    {
+      iss: APP_ID,
+      entity: { type: "order", id: "<order_id>", access: ["manage_chat"] },
+      user: { id: "123", username: "Bob" },
+      iat: Date.now(),
+      exp: today.setHours(today.getHours() + 1),
+    },
+    PRIVATE_KEY,
+    { algorithm: "RS256", header: { kid: KID } }
+  )
+  console.log(c)
 }
 
-const now = new Date()
-
-const jwt = sign(
-  {
-    entity: { type: "merchant", id: "<merchant_or_order_id>", access: ["manage_fleet_settings"] },
-    user: { id: "123", username: "Bob" },
-    iat: now.getTime(),
-    exp: addHours(now, 24).getTime(),
-  },
-  response.privateKey,
-  { keyid: response.kid, issuer: response.ownerId, algorithm: "RS256" }
-)
-
-console.log(jwt)
+if (require.main === module) {
+  main()
+}
